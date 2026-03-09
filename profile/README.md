@@ -16,4 +16,4 @@ The primary computer interface for these labs is the Linux Terminal. However, mo
 * On the first launch, you will be prompted to set a username and password (set these as you wish.)
 
 
-
+[See the course Wiki for more information](https://github.com/sphemakh-astrolab/.github/wiki)
