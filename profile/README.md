@@ -17,3 +17,7 @@ The primary computer interface for these labs is the Linux Terminal. However, mo
 
 
 [See the course Wiki for more information](https://github.com/sphemakh-astrolab/.github/wiki)
+
+## This Semester
+
+See the [Semester 2 course plan and lab schedule](https://github.com/sphemakh-astrolab/.github/blob/main/course-plan/README.md) for the full list of labs (Lab IV – Lab XII) and the dates for Block 3 and Block 4.

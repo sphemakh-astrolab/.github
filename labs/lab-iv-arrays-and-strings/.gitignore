@@ -1,0 +1,11 @@
+# Compiled programs / build artifacts
+arrays_and_strings
+*.out
+a.out
+*.o
+*.obj
+*.exe
+
+# Editor / OS clutter
+.vscode/
+.DS_Store
