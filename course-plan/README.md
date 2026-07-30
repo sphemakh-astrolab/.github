@@ -28,10 +28,9 @@ are kept in this repository under [`labs/`](../labs).
 
 | Date       | Lab                                                    |
 |------------|--------------------------------------------------------|
-| 27 July    | **Lab IV** — Arrays and Strings *(C++)*                |
-| 03 August  | **Lab V** — A Gentle Introduction to Python            |
+| 03 August    | **Lab IV** — Arrays and Strings *(C++)*              |         |
 | ~~10 August~~ | *No lab — Women's Day (public holiday)*             |
-| 17 August  | **Lab VI** — Control Flow and Functions in Python      |
+| 17 August  | **Lab VI** — Basic Python + Control Flow and Functions |
 | 24 August  | **Lab VII** — Python Data Structures                   |
 | 31 August  | **Lab VIII** — Reading and Writing Data Files          |
 
@@ -39,7 +38,7 @@ are kept in this repository under [`labs/`](../labs).
 
 | Date         | Lab                                                  |
 |--------------|------------------------------------------------------|
-| 14 September | **Lab IX** — NumPy Arrays                            |
+| 14 September | **Lab IX** — NumPy Arrays +                          |
 | 21 September | **Lab X** — Plotting with Matplotlib                 |
 | 05 October   | **Lab XI** — Analysing Tabular Data                  |
 | 19 October   | **Lab XII** — Capstone Mini-Project                  |
@@ -49,19 +48,21 @@ are kept in this repository under [`labs/`](../labs).
 
 ---
 
+
+
 ## What each lab covers
 
 | Lab  | Title                              | You will learn                                                                                 |
 |------|------------------------------------|------------------------------------------------------------------------------------------------|
 | IV   | Arrays and Strings *(C++)*         | Fixed-size arrays, looping over them, arrays as function arguments; `std::string` basics.       |
-| V    | A Gentle Introduction to Python    | Running Python, dynamic typing vs C++, variables, `print`/`input`, f-strings.                   |
-| VI   | Control Flow and Functions         | `if/elif/else`, `for`/`while`, `range`, defining functions, importing modules.                  |
-| VII  | Python Data Structures             | Lists, tuples, dictionaries, slicing, list comprehensions, string methods.                      |
-| VIII | Reading and Writing Data Files     | Opening files, looping over lines, parsing a CSV of astronomical data.                          |
-| IX   | NumPy Arrays                       | `ndarray`, vectorised maths, indexing and boolean masking.                                      |
-| X    | Plotting with Matplotlib           | Scatter/line plots, labels, log axes, saving figures.                                           |
-| XI   | Analysing Tabular Data             | Loading a real dataset, filtering, computing derived quantities, plotting a result (NumPy).     |
-| XII  | Capstone Mini-Project              | Read real astronomical data → analyse → produce a labelled plot → push and open a pull request. |
+| V(a) | A Gentle Introduction to Python    | Running Python, dynamic typing vs C++, variables, `print`/`input`, f-strings.                   |
+| V(b) | Control Flow and Functions         | `if/elif/else`, `for`/`while`, `range`, defining functions, importing modules.                  |
+| VI   | Python Data Structures             | Lists, tuples, dictionaries, slicing, list comprehensions, string methods.                      |
+| VII  | Reading and Writing Data Files     | Opening files, looping over lines, parsing a CSV of astronomical data.                          |
+| VIII | NumPy Arrays                       | `ndarray`, vectorised maths, indexing and boolean masking.                                      |
+| IX   | Plotting with Matplotlib           | Scatter/line plots, labels, log axes, saving figures.                                           |
+| X    | Analysing Tabular Data             | Loading a real dataset, filtering, computing derived quantities, plotting a result (NumPy).     |
+| XI   | Capstone Mini-Project              | Read real astronomical data → analyse → produce a labelled plot → push and open a pull request. |
 
 The Python half deliberately re-does some early C++ tasks in Python first, so the
 language switch feels natural, before opening up what Python makes easy:
