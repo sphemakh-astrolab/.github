@@ -48,7 +48,7 @@ organisation, which is where its instructions and starter files live.
 
 | Date          | Lab                                                                       | Session                                        |
 |---------------|---------------------------------------------------------------------------|------------------------------------------------|
-| 03 August     | [**Lab IV** — Arrays and Strings *(C++)*](https://github.com/sphemakh-astrolab/lab-iv-arrays-and-strings)                                   | Single session — carried over; submit tonight  |
+| 03 August     | [**Lab IV** — Arrays and Strings *(C++)*](https://github.com/sphemakh-astrolab/lab-iv-arrays-and-strings)                                   | Single session — carried over; submit by Fri 7 Aug, 23:59  |
 | ~~10 August~~ | *No lab — Women's Day (observed Monday, as 9 August is a Sunday)*         | —                                              |
 | 17 August     | [**Lab V** — Introduction to Python: Basics, Control Flow and Functions](https://github.com/sphemakh-astrolab/lab-v-python-basics-and-control-flow)    | Week 1 — mini-lecture, start the lab           |
 | 24 August     | **Lab V** — continued                                                     | Week 2 — submit by midnight                    |
