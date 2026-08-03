@@ -19,14 +19,24 @@ are kept in this repository under [`labs/`](../labs).
   **submit by midnight that same day**.
 - Lab IV is the one exception: it carries over from Block 2 and gets a single
   session.
-- Every lab has a starter with clear exercises — you always start from working,
-  compilable code, not a blank page.
+- Every lab has a starter file laying out the structure and the exercises, so you
+  never face a blank page. How much code it hands you varies: some labs give you
+  a running program to extend, others give you the skeleton and worked examples
+  in the lab README, and you write the code.
 - You submit by committing and pushing your work and opening a pull request, then
   letting your instructor know (same workflow as Semester 1).
 
 ---
 
 ## Schedule
+
+> ### ⚠ The whole schedule is provisional
+>
+> The **Digital Dome** allocates us one Monday for the Lab IX capstone visit, and
+> **that date is not yet fixed**. Whichever Monday we are given, the labs around
+> it may have to move. Treat every date below as the current plan rather than a
+> promise, and **check this page before each session** — it is always the
+> up-to-date version.
 
 ### Block 3 · 27 July – 4 September · *Finishing C++ & Launching Python*
 
@@ -47,8 +57,12 @@ are kept in this repository under [`labs/`](../labs).
 | 28 September | **Lab VII** — continued                                                                                                 | Week 2 — submit by midnight                 |
 | 05 October   | **Lab VIII** — Analysing Tabular Data                                                                                   | Week 1 — mini-lecture, start the lab        |
 | 12 October   | **Lab VIII** — continued                                                                                                | Week 2 — submit by midnight                 |
-| 19 October   | [**Lab IX** — Capstone Project: Predicting a Planetary Alignment](../labs/lab-ix-capstone-planetary-alignment)          | Week 1 — Digital Dome visit                 |
-| 26 October   | **Lab IX** — continued                                                                                                  | Week 2 — computer lab; submit by midnight   |
+| **TBD** — Dome to confirm | [**Lab IX** — Capstone Project: Predicting a Planetary Alignment](../labs/lab-ix-capstone-planetary-alignment) | Week 1 — Digital Dome visit                 |
+| **TBD** — the Monday after | **Lab IX** — continued                                                                                       | Week 2 — computer lab; submit by midnight   |
+
+> **On the capstone dates.** 19 and 26 October are currently held for Lab IX, but
+> the Dome chooses which Monday we get. Once it is confirmed the dates above will
+> be filled in here, and anything that has to move will move.
 
 > Note that **Lab VI spans the break between the two blocks** — you start it on
 > 31 August and submit it on 14 September. Use the gap; don't leave it all to the
