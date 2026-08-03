@@ -1,4 +1,4 @@
-# Lab XII: Capstone Project — Predicting a Planetary Alignment
+# Lab IX: Capstone Project — Predicting a Planetary Alignment
 
 **Programming Essentials for Astronomy I — Python**
 
@@ -474,7 +474,7 @@ is 2 days out by luck and cannot say how.
 3. **Commit** and **push**:
    ```bash
    git add .
-   git commit -m "Complete Lab XII: Capstone — predicting a planetary alignment"
+   git commit -m "Complete Lab IX: Capstone — predicting a planetary alignment"
    git push
    ```
 4. **Open a pull request** and let your instructor know you've finished.
