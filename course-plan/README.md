@@ -41,7 +41,7 @@ are kept in this repository under [`labs/`](../labs).
 | 14 September | **Lab IX** — NumPy Arrays +                          |
 | 21 September | **Lab X** — Plotting with Matplotlib                 |
 | 05 October   | **Lab XI** — Analysing Tabular Data                  |
-| 19 October   | **Lab XII** — Capstone Mini-Project                  |
+| 19 October   | [**Lab XII** — Capstone Project: Predicting a Planetary Alignment](../labs/lab-xii-capstone-planetary-alignment) |
 
 > Dates are Mondays within each block and may shift slightly around the spring
 > recess and any public holidays — check here for the current version.
@@ -62,7 +62,7 @@ are kept in this repository under [`labs/`](../labs).
 | VIII | NumPy Arrays                       | `ndarray`, vectorised maths, indexing and boolean masking.                                      |
 | IX   | Plotting with Matplotlib           | Scatter/line plots, labels, log axes, saving figures.                                           |
 | X    | Analysing Tabular Data             | Loading a real dataset, filtering, computing derived quantities, plotting a result (NumPy).     |
-| XI   | Capstone Mini-Project              | Read real astronomical data → analyse → produce a labelled plot → push and open a pull request. |
+| XII  | [Capstone Project](../labs/lab-xii-capstone-planetary-alignment) | Measure planetary positions in the Digital Dome → fit orbits → predict the date of the next Earth–Venus–Mars alignment → verify it, and write it up. |
 
 The Python half deliberately re-does some early C++ tasks in Python first, so the
 language switch feels natural, before opening up what Python makes easy:
