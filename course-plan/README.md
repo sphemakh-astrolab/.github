@@ -72,6 +72,10 @@ organisation, which is where its instructions and starter files live.
 
 > ### About the Dome visit on 17 August
 >
+> **[Read the full Dome visit announcement](https://github.com/sphemakh-astrolab/.github/blob/main/announcements/2026-08-17-dome-visit.md)**
+> — what you will see, what to bring, and the data table to draw before you
+> arrive. The essentials:
+>
 > - **Be at the Dome by 14:00.** We start at 14:15 sharp — the Dome steps through
 >   the twelve epochs once, for the whole room, and there is no way to replay them
 >   for latecomers.
