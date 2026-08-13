@@ -48,7 +48,8 @@ Over the sequence you will see:
 - **A readout** with two things on it: a clock giving the elapsed simulated time
   in **days since the session's start date**, and the **heliocentric distance in
   AU** of each of the three planets.
-- **Twelve epochs**, 60 simulated days apart which is about 690 days in total or one Mars year. We hold each step for a minute and a half to two minutes, the
+- **Twelve epochs**, 60 simulated days apart -- 660 days in total, near enough
+  one Mars year. We hold each step for a minute and a half to two minutes, the
   demonstrator calls out the step number before each advance, and we will not
   move on until the room is ready.
 - At the end, we fly back down to **Earth's surface** and step through a past
