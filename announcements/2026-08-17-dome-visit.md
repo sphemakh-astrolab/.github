@@ -45,9 +45,9 @@ Over the sequence you will see:
   view is locked, so an angle you estimate at step 1 means the same thing at
   step 12.
 - **Venus, Earth and Mars**, individually labelled or colour-coded with a key.
-- **A readout** with two things on it: a clock giving the elapsed simulated time
-  in **days since the session's start date**, and the **heliocentric distance in
-  AU** of each of the three planets.
+- **An on-screen panel** with two things on it: a clock giving the elapsed
+  simulated time in **days since the session's start date**, and the
+  **heliocentric distance in AU** of each of the three planets.
 - **Twelve epochs**, 60 simulated days apart -- 660 days in total, near enough
   one Mars year. We hold each step for a minute and a half to two minutes, the
   demonstrator calls out the step number before each advance, and we will not
@@ -126,7 +126,7 @@ start date: ________________________
 ```
 
 The three longitudes you estimate off the grid; the three distances you copy off
-the readout. Six numbers per epoch, twelve times.
+the panel. Six numbers per epoch, twelve times.
 
 > **Write down the start date.** It is announced at the very beginning and left
 > up. Every one of your measurements is "so many days after the start date" -- a
