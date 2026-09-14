@@ -7,10 +7,19 @@ move to **Python**, which we use to learn the fundamentals of **scientific data
 analysis**. Labs continue from where we left off in Semester 1 (which ended at
 Lab III), so this semester runs **Lab IV → Lab IX**.
 
-Each lab is a GitHub Classroom exercise with an astronomy theme. Every lab has
-its **own repository** in the
+Each lab is a GitHub exercise with an astronomy theme. Every lab has its **own
+repository** in the
 [sphemakh-astrolab](https://github.com/orgs/sphemakh-astrolab/repositories)
 organisation, which is where its instructions and starter files live.
+
+> **How you get your copy of a lab.** GitHub Classroom has been retired, so there
+> is no invitation link to click any more. When a lab opens, we create a
+> **private** repository just for you, named after the lab and your GitHub
+> username (for example `lab-vi-<your-username>`), and GitHub emails you an
+> invitation to it. **Accept the invitation within 7 days**, or it expires and
+> you have to ask us to send it again. Only you and the course staff can see your
+> repository. It comes with a pull request called **Feedback**. That is where we
+> leave comments on your work, so don't close or merge it.
 
 > **A lab's repository opens on the day of that lab.** Until then the link below
 > will give you a "404 — not found" page. That is expected, not a broken link:
