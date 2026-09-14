@@ -21,9 +21,11 @@ organisation, which is where its instructions and starter files live.
 > repository. It comes with a pull request called **Feedback**. That is where we
 > leave comments on your work, so don't close or merge it.
 
-> **A lab's repository opens on the day of that lab.** Until then the link below
-> will give you a "404 — not found" page. That is expected, not a broken link:
-> the repository exists, it just isn't public yet.
+> **Always work in your own repository.** The lab links in the schedule below
+> point to each lab's starter template, and some templates are private, so a
+> link may give you a "404 — not found" page. That is expected, not a broken
+> link. Your own copy, `<lab>-<your-username>`, is listed under **Your
+> repositories** on GitHub once you have accepted the invitation.
 
 ---
 
