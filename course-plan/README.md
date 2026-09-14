@@ -42,8 +42,9 @@ organisation, which is where its instructions and starter files live.
   never face a blank page. How much code it hands you varies: some labs give you
   a running program to extend, others give you the skeleton and worked examples
   in the lab README, and you write the code.
-- You submit by committing and pushing your work and opening a pull request, then
-  letting your instructor know (same workflow as Semester 1).
+- **To submit, commit and push your work to your lab repository by midnight** on
+  the due date. We collect whatever is on your `main` branch at midnight, so there
+  is no pull request to open and no need to tell us you've finished.
 
 ---
 
