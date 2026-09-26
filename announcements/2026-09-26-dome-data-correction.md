@@ -131,28 +131,32 @@ def earth_planet_distance_candidates(geocentric_longitude_deg, earth_longitude_d
     crosses the planet's orbit.
     """
     elongation = math.radians(geocentric_longitude_deg - earth_longitude_deg)
-    b = 2 * earth_distance_au * math.cos(elongation)
-    c = earth_distance_au ** 2 - planet_distance_au ** 2
-    discriminant = b ** 2 - 4 * c
+    linear_coefficient = 2 * earth_distance_au * math.cos(elongation)
+    constant_term = earth_distance_au ** 2 - planet_distance_au ** 2
+    discriminant = linear_coefficient ** 2 - 4 * constant_term
     if discriminant < 0:
         return []
     sqrt_discriminant = math.sqrt(discriminant)
-    roots = [(-b + sqrt_discriminant) / 2, (-b - sqrt_discriminant) / 2]
-    return [d for d in roots if d > 0]
+    roots = [
+        (-linear_coefficient + sqrt_discriminant) / 2,
+        (-linear_coefficient - sqrt_discriminant) / 2,
+    ]
+    return [distance for distance in roots if distance > 0]
 
 
 def heliocentric_longitude_deg(geocentric_longitude_deg, earth_x, earth_y, distance_au):
     """Heliocentric longitude of a point a given distance along the sightline from Earth."""
     angle = math.radians(geocentric_longitude_deg)
-    x = earth_x + distance_au * math.cos(angle)
-    y = earth_y + distance_au * math.sin(angle)
-    return math.degrees(math.atan2(y, x)) % 360
+    planet_x = earth_x + distance_au * math.cos(angle)
+    planet_y = earth_y + distance_au * math.sin(angle)
+    return math.degrees(math.atan2(planet_y, planet_x)) % 360
 
 
 def closest_to(candidates, target_deg):
     """Whichever candidate longitude is closest to target_deg, wrapping at 360 degrees."""
-    def angular_distance(a, b):
-        return min(abs(a - b), 360 - abs(a - b))
+    def angular_distance(first_deg, second_deg):
+        difference = abs(first_deg - second_deg)
+        return min(difference, 360 - difference)
     return min(candidates, key=lambda candidate: angular_distance(candidate, target_deg))
 
 
@@ -175,8 +179,8 @@ def convert_series(geocentric_longitudes_deg, earth_longitudes_deg,
         earth_x, earth_y = earth_heliocentric_xy(lon_earth, r_earth)
         distances = earth_planet_distance_candidates(lon_geo, lon_earth, r_earth, r_planet)
         candidates = [
-            heliocentric_longitude_deg(lon_geo, earth_x, earth_y, d)
-            for d in distances
+            heliocentric_longitude_deg(lon_geo, earth_x, earth_y, distance)
+            for distance in distances
         ]
 
         if len(candidates) == 1 or previous is None:
