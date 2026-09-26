@@ -53,62 +53,200 @@ y = r_E sin(λ_E) + d sin(λ_geo)
 λ_helio = atan2(y, x)
 ```
 
-### Worked example — a planet farther from the Sun than Earth is
+For a planet farther from the Sun than Earth (Mars), that quadratic always has
+exactly one positive root — one measurement, one answer. For a planet closer
+to the Sun than Earth (Venus), it can have **two** positive roots: a ray from
+Earth generally crosses Venus's smaller orbit twice, and a single angle can't
+tell you which crossing is real. Two genuinely different heliocentric
+longitudes, tens of degrees apart, can both be geometrically valid for the
+same measurement. The fix is continuity: of the two candidates, keep whichever
+is closer to the value you chose at the previous epoch, since Venus can't jump
+between them in a single 60-day step. The two candidates merge into one only
+at the epoch(s) where Venus sits at its largest elongation from the Sun.
 
-None of these numbers are from your data. Say Earth is at λ_E = 40°,
-r_E = 1.00 AU, and you're converting a planet with r_P = 1.60 AU seen at
-λ_geo = 100°.
+## The code
+
+Since you're not the ones who introduced this problem, here is a script that
+does the conversion, rather than another worked example for you to reproduce
+by hand. It implements exactly the geometry above: one function per step,
+each with a one-line docstring saying what it returns, and a `main()` that
+wires them together — this is also meant as a template for how to structure
+the rest of your capstone scripts.
+
+**[`convert_dome_data.py`](https://github.com/sphemakh-astrolab/.github/blob/main/labs/lab-ix-capstone-planetary-alignment/convert_dome_data.py)**
+— this lives here rather than in your capstone template repo, since a fix
+made now wouldn't reach a template repo already generated for you.
+
+```python
+"""
+Convert Dome geocentric longitude readings to heliocentric longitude.
+
+Background: the 17 August Dome session ended up viewed from Earth rather
+than the Sun, so what you measured for Venus and Mars is each planet's
+ecliptic longitude *as seen from Earth* (geocentric), not from the Sun
+(heliocentric). This script converts one to the other, using Earth's own
+heliocentric position -- which the broken viewpoint could not show you
+directly, but which is known from the same reference data the Dome session
+was set up from.
+
+This file is also meant as a template for how to structure your own
+capstone scripts: one function per well-defined step, a docstring saying
+what each function returns, and a main() that reads the data, calls the
+functions in order, and reports the result.
+"""
+
+import math
+
+
+# Earth's heliocentric longitude (degrees) and the three heliocentric
+# distances (AU), for the same twelve epochs you measured at the Dome.
+# These come from the same reference data the session was set up from, and
+# were not something the broken viewpoint could show you.
+DAYS_SINCE_START = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660]
+EARTH_LONGITUDE_DEG = [323.76, 22.28, 82.64, 143.67, 203.46, 261.42,
+                       318.71, 17.07, 77.29, 138.35, 198.29, 256.39]
+VENUS_DISTANCE_AU = [0.7276, 0.7253, 0.7187, 0.7224, 0.7282, 0.7233,
+                      0.7185, 0.7245, 0.7279, 0.7213, 0.7192, 0.7263]
+EARTH_DISTANCE_AU = [1.0125, 0.9971, 0.9843, 0.9872, 1.0028, 1.0155,
+                      1.0134, 0.9985, 0.9849, 0.9863, 1.0012, 1.0149]
+MARS_DISTANCE_AU = [1.5003, 1.5763, 1.6351, 1.6641, 1.6582, 1.6182,
+                     1.5519, 1.4743, 1.4091, 1.3812, 1.4035, 1.4656]
+
+
+def earth_heliocentric_xy(earth_longitude_deg, earth_distance_au):
+    """Earth's (x, y) position in the heliocentric frame, Sun at the origin."""
+    angle = math.radians(earth_longitude_deg)
+    return earth_distance_au * math.cos(angle), earth_distance_au * math.sin(angle)
+
+
+def earth_planet_distance_candidates(geocentric_longitude_deg, earth_longitude_deg,
+                                      earth_distance_au, planet_distance_au):
+    """
+    Solve the Sun-Earth-planet triangle for the Earth-planet distance.
+
+    Returns a list of the physically valid (positive) solutions for the
+    distance along the line of sight: one for a planet farther from the Sun
+    than Earth (e.g. Mars), or zero, one or two for a planet closer to the
+    Sun than Earth (e.g. Venus), depending on whether the sightline actually
+    crosses the planet's orbit.
+    """
+    elongation = math.radians(geocentric_longitude_deg - earth_longitude_deg)
+    b = 2 * earth_distance_au * math.cos(elongation)
+    c = earth_distance_au ** 2 - planet_distance_au ** 2
+    discriminant = b ** 2 - 4 * c
+    if discriminant < 0:
+        return []
+    sqrt_discriminant = math.sqrt(discriminant)
+    roots = [(-b + sqrt_discriminant) / 2, (-b - sqrt_discriminant) / 2]
+    return [d for d in roots if d > 0]
+
+
+def heliocentric_longitude_deg(geocentric_longitude_deg, earth_x, earth_y, distance_au):
+    """Heliocentric longitude of a point a given distance along the sightline from Earth."""
+    angle = math.radians(geocentric_longitude_deg)
+    x = earth_x + distance_au * math.cos(angle)
+    y = earth_y + distance_au * math.sin(angle)
+    return math.degrees(math.atan2(y, x)) % 360
+
+
+def closest_to(candidates, target_deg):
+    """Whichever candidate longitude is closest to target_deg, wrapping at 360 degrees."""
+    def angular_distance(a, b):
+        return min(abs(a - b), 360 - abs(a - b))
+    return min(candidates, key=lambda candidate: angular_distance(candidate, target_deg))
+
+
+def convert_series(geocentric_longitudes_deg, earth_longitudes_deg,
+                    earth_distances_au, planet_distances_au):
+    """
+    Convert a whole series of geocentric readings to heliocentric longitude.
+
+    For a planet closer to the Sun than Earth (e.g. Venus), a single epoch
+    can have two valid solutions. We keep whichever is closest to the
+    previous epoch's chosen value, since the true motion is smooth from one
+    60-day step to the next.
+    """
+    results = []
+    previous = None
+    for lon_geo, lon_earth, r_earth, r_planet in zip(
+        geocentric_longitudes_deg, earth_longitudes_deg,
+        earth_distances_au, planet_distances_au
+    ):
+        earth_x, earth_y = earth_heliocentric_xy(lon_earth, r_earth)
+        distances = earth_planet_distance_candidates(lon_geo, lon_earth, r_earth, r_planet)
+        candidates = [
+            heliocentric_longitude_deg(lon_geo, earth_x, earth_y, d)
+            for d in distances
+        ]
+
+        if len(candidates) == 1 or previous is None:
+            chosen = candidates[0]
+        else:
+            chosen = closest_to(candidates, previous)
+
+        results.append(chosen)
+        previous = chosen
+    return results
+
+
+def main():
+    # Replace these two lists with your own twelve readings, in the same
+    # order as DAYS_SINCE_START above. The numbers below are made up, just
+    # to show the script running end to end -- they are not real Dome data.
+    example_venus_geocentric_deg = [
+        173.8, 182.3, 297.6, 298.7, 43.5, 46.4,
+        163.7, 182.1, 267.3, 288.4, 33.3, 66.4,
+    ]
+    example_mars_geocentric_deg = [
+        40.0, 95.0, 150.0, 200.0, 250.0, 300.0,
+        350.0, 40.0, 90.0, 140.0, 190.0, 240.0,
+    ]
+
+    venus_helio_deg = convert_series(
+        example_venus_geocentric_deg, EARTH_LONGITUDE_DEG,
+        EARTH_DISTANCE_AU, VENUS_DISTANCE_AU,
+    )
+    mars_helio_deg = convert_series(
+        example_mars_geocentric_deg, EARTH_LONGITUDE_DEG,
+        EARTH_DISTANCE_AU, MARS_DISTANCE_AU,
+    )
+
+    print(f"{'day':>5}  {'venus (helio)':>14}  {'mars (helio)':>13}")
+    for day, venus_lon, mars_lon in zip(DAYS_SINCE_START, venus_helio_deg, mars_helio_deg):
+        print(f"{day:5d}  {venus_lon:14.2f}  {mars_lon:13.2f}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Running it as it stands (with the made-up example readings baked in, **not**
+your data) prints:
 
 ```
-Δ = λ_geo − λ_E = 60°
-d² + 2(1.00)cos(60°) d + (1.00² − 1.60²) = 0
-d² + d − 1.56 = 0
-d = [−1 ± √7.24] / 2  →  d ≈ 0.846  or  d ≈ −1.846
+  day   venus (helio)   mars (helio)
+    0          217.96         359.04
+   60          154.28          57.84
+  120           65.90         116.25
+  180          153.93         170.41
+  240          195.34         223.96
+  300          280.08         276.96
+  360          307.13         330.17
+  420           22.96          24.70
+  480           73.70          81.15
+  540          151.45         138.82
+  600          192.17         195.90
+  660          260.43         251.27
 ```
 
-Only the positive root is physical: d ≈ 0.846 AU. Then
+Notice `earth_planet_distance_candidates` returns **two** candidates at every
+one of these example epochs for Venus, yet the printed longitudes still move
+smoothly — that's `closest_to` doing the continuity resolution described
+above, epoch by epoch, not a coincidence of these particular made-up numbers.
 
-```
-x = 1.00 cos40° + 0.846 cos100° ≈ 0.619
-y = 1.00 sin40° + 0.846 sin100° ≈ 1.476
-λ_helio = atan2(1.476, 0.619) ≈ 67.2°
-```
-
-(Check: √(0.619² + 1.476²) ≈ 1.60 — matches r_P, as it should.)
-
-This is the case for **Mars**: because r_Mars is always bigger than r_Earth,
-the quadratic only ever has one positive root. One measurement, one answer.
-
-### Worked example — a planet closer to the Sun than Earth is
-
-Again, invented numbers. Earth at λ_E = 0°, r_E = 1.00 AU, converting a planet
-with r_P = 0.70 AU seen at λ_geo = 200°.
-
-```
-Δ = 200°
-d² + 2(1.00)cos(200°) d + (1.00² − 0.70²) = 0
-d² − 1.879 d + 0.51 = 0
-d ≈ 0.329  or  d ≈ 1.551
-```
-
-**Both roots are positive.** Working each through to λ_helio:
-
-- d ≈ 0.329 AU → λ_helio ≈ 351°
-- d ≈ 1.551 AU → λ_helio ≈ 229°
-
-Two genuinely different answers, ~120° apart, from the same single
-measurement. This isn't a mistake in the algebra — geometrically, a ray from
-Earth generally crosses a smaller circle (Venus's orbit) twice, and a single
-angle can't tell you which crossing is real.
-
-This is the case for **Venus**: r_Venus is smaller than r_Earth, so most of
-your twelve epochs will have two candidate longitudes, and you have to choose
-one. **Use continuity**: pick whichever root sits closer to the value you
-picked at the previous epoch — the real Venus moves smoothly from one epoch to
-the next, 60 days apart, so its true longitude can't jump by 120° between
-consecutive readings. The two roots merge into one only at the epoch(s) where
-Venus sits at its largest elongation from the Sun; everywhere else, continuity
-should make the choice obvious once you've picked a starting point.
+To use it on your own data: replace `example_venus_geocentric_deg` and
+`example_mars_geocentric_deg` in `main()` with your own twelve readings, in
+the same day order, and re-run.
 
 ## The extra data
 
@@ -151,3 +289,15 @@ If anything here doesn't line up with what you wrote down on the day —
 in particular if your table is missing a row, or you're unsure which of
 Venus's or Mars's columns you actually measured — get in touch before 26
 October rather than guessing.
+
+## A second estimate, from everyone's data pooled together
+
+On 26 October you'll produce two conjunction estimates, not one: your own,
+from your own twelve epochs as above, and a second from **all** students'
+raw readings pooled together, to compare against it.
+
+**[Submit your raw geocentric readings here](https://github.com/sphemakh-astrolab/.github/issues/new?template=dome-measurements.yml)**
+— the twelve epochs you actually wrote down at the Dome, not the converted
+heliocentric values. One issue per person, even if you worked in a pair. The
+conversion above will be applied once, the same way, to the whole pooled set,
+so it needs your raw numbers, not your own converted ones.

@@ -1,0 +1,91 @@
+name: Dome Measurement Submission
+description: Submit your 17 August Dome readings so a class-pooled dataset can be built alongside your own individual one.
+title: "Dome data: "
+labels:
+  - dome-data
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is for the Lab IX capstone's **second estimate** — a conjunction
+        prediction from everyone's readings pooled together, to compare against
+        the estimate you get from your own data alone.
+
+        Submit the **raw geocentric longitudes you actually read off the grid**
+        at the Dome — not a converted or heliocentric value, and not a value
+        you've since adjusted. See the
+        [data correction announcement](https://github.com/sphemakh-astrolab/.github/blob/main/announcements/2026-09-26-dome-data-correction.md)
+        for what those readings mean and how the conversion works; that
+        conversion will be applied once, the same way, to the whole pooled set.
+
+        **Submit one issue per person**, even if you worked in a pair — see the
+        pairing question below.
+
+  - type: input
+    id: github_username
+    attributes:
+      label: Your GitHub username
+      description: So a reading can be checked against your capstone repository if the pooled fit flags it as an outlier.
+      placeholder: yourusername
+    validations:
+      required: true
+
+  - type: dropdown
+    id: work_mode
+    attributes:
+      label: Did you work alone or in a pair at the Dome?
+      options:
+        - Alone
+        - In a pair
+    validations:
+      required: true
+
+  - type: input
+    id: partner_username
+    attributes:
+      label: Partner's GitHub username, if you worked in a pair
+      description: Leave blank if you worked alone. A pair watched the same screen at the same time, so the pooled analysis needs to know not to treat two submissions from one pair as two independent observers.
+      placeholder: partnerusername
+
+  - type: input
+    id: start_date
+    attributes:
+      label: Session start date you were given
+      description: Should be 17 August 2026 unless you were told otherwise on the day.
+      value: "17 August 2026"
+    validations:
+      required: true
+
+  - type: textarea
+    id: measurements
+    attributes:
+      label: Your twelve epochs, as measured
+      description: |
+        One row per epoch, in the order you recorded them, as CSV:
+        days_since_start, lon_venus_geo, lon_mars_geo
+        Both longitudes are the raw geocentric readings off the grid, in degrees.
+      placeholder: |
+        0, ..., ...
+        60, ..., ...
+        120, ..., ...
+        180, ..., ...
+        240, ..., ...
+        300, ..., ...
+        360, ..., ...
+        420, ..., ...
+        480, ..., ...
+        540, ..., ...
+        600, ..., ...
+        660, ..., ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: These are the values I actually recorded at the Dome, not values I have adjusted, converted or recalculated since.
+          required: true
+        - label: I understand this issue, including my GitHub username, will be publicly visible in this repository.
+          required: true
