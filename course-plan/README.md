@@ -88,6 +88,12 @@ organisation, which is where its instructions and starter files live.
 > — what you will see, what to bring, and the data table to draw before you
 > arrive. The essentials:
 >
+> **Update, 26 September:** the session was viewed from Earth rather than the
+> Sun, and the distance panel could not be shown. If you were there, read the
+> **[data correction](https://github.com/sphemakh-astrolab/.github/blob/main/announcements/2026-09-26-dome-data-correction.md)**
+> before the 26 October session — you'll need the extra numbers in it to
+> convert what you measured.
+>
 > - **Be at the Dome by 14:00.** We start at 14:15 sharp — the Dome steps through
 >   the twelve epochs once, for the whole room, and there is no way to replay them
 >   for latecomers.
