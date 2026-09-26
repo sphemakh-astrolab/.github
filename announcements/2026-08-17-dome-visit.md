@@ -3,6 +3,13 @@
 This is the first of the capstone's two sessions and it is the only chance to
 collect the data.
 
+> **Update, 26 September:** the session did not go quite as described below —
+> the viewpoint ended up centred on Earth rather than the Sun, and the
+> distance panel could not be shown. If you were there on the day, read
+> **[the data correction](2026-09-26-dome-data-correction.md)** before 26
+> October; it explains what that means for your table and supplies the extra
+> numbers you'll need.
+
 ---
 
 ## The short version
