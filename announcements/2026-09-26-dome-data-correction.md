@@ -26,8 +26,7 @@ give you an orbit.
 The good news: what you measured is not wasted. Venus's and Mars's angle from
 Earth, combined with a bit of geometry and a short table of extra numbers
 below, gets you back to heliocentric longitude — the thing you were meant to
-measure. You still do the conversion yourselves; we are only supplying the
-piece the broken viewpoint didn't let you read.
+measure.
 
 ## The geometry
 
@@ -58,11 +57,20 @@ exactly one positive root — one measurement, one answer. For a planet closer
 to the Sun than Earth (Venus), it can have **two** positive roots: a ray from
 Earth generally crosses Venus's smaller orbit twice, and a single angle can't
 tell you which crossing is real. Two genuinely different heliocentric
-longitudes, tens of degrees apart, can both be geometrically valid for the
-same measurement. The fix is continuity: of the two candidates, keep whichever
-is closer to the value you chose at the previous epoch, since Venus can't jump
-between them in a single 60-day step. The two candidates merge into one only
-at the epoch(s) where Venus sits at its largest elongation from the Sun.
+longitudes — anywhere from a few degrees to most of a half-circle apart — can
+both be geometrically valid for the same measurement. The two candidates
+merge into one only at the epoch(s) where Venus sits at its largest elongation
+from the Sun.
+
+**Picking the right one is not as simple as "closest to last time."** Venus
+moves roughly 1.6° per day, so across a 60-day step it moves roughly 96° —
+often *more* than the gap between the two candidates. Comparing each new
+candidate to the raw previous value routinely picks the wrong one. What
+works instead is comparing each candidate to where Venus should *roughly* be,
+given the previous value and that known rate of motion, and at the very first
+epoch — where there is no previous value yet — trying both candidates as the
+starting point and keeping whichever choice stays consistent with itself
+across the whole run.
 
 ## The code
 
@@ -112,6 +120,14 @@ EARTH_DISTANCE_AU = [1.0125, 0.9971, 0.9843, 0.9872, 1.0028, 1.0155,
 MARS_DISTANCE_AU = [1.5003, 1.5763, 1.6351, 1.6641, 1.6582, 1.6182,
                      1.5519, 1.4743, 1.4091, 1.3812, 1.4035, 1.4656]
 
+# Roughly how fast each planet moves round the Sun, in degrees per day.
+# Venus's own orbital period is about 225 days and Mars's about 687 days,
+# so these are just 360 divided by that. They only need to be roughly
+# right -- they're used to guess which of two candidate positions is the
+# real one, not to fit anything.
+VENUS_APPROX_RATE_DEG_PER_DAY = 360.0 / 225.0
+MARS_APPROX_RATE_DEG_PER_DAY = 360.0 / 687.0
+
 
 def earth_heliocentric_xy(earth_longitude_deg, earth_distance_au):
     """Earth's (x, y) position in the heliocentric frame, Sun at the origin."""
@@ -124,24 +140,47 @@ def earth_planet_distance_candidates(geocentric_longitude_deg, earth_longitude_d
     """
     Solve the Sun-Earth-planet triangle for the Earth-planet distance.
 
-    Returns a list of the physically valid (positive) solutions for the
-    distance along the line of sight: one for a planet farther from the Sun
-    than Earth (e.g. Mars), or zero, one or two for a planet closer to the
-    Sun than Earth (e.g. Venus), depending on whether the sightline actually
-    crosses the planet's orbit.
+    Returns (candidates, warning). candidates is a list of the physically
+    valid (positive) solutions for the distance along the line of sight:
+    one for a planet farther from the Sun than Earth (e.g. Mars), or one or
+    two for a planet closer to the Sun than Earth (e.g. Venus), depending on
+    whether the sightline actually crosses the planet's orbit.
+
+    A planet closer to the Sun than Earth can never appear, as seen from
+    Earth, more than max_elongation = asin(planet_distance_au / earth_distance_au)
+    away from the Sun's own direction. If the reading implies a wider angle
+    than that -- almost always a transcription or reading error -- there is
+    no exact solution. warning is then a message saying so, and candidates
+    holds the single closest point instead of failing outright; otherwise
+    warning is None.
     """
-    elongation = math.radians(geocentric_longitude_deg - earth_longitude_deg)
-    linear_coefficient = 2 * earth_distance_au * math.cos(elongation)
+    longitude_offset_deg = geocentric_longitude_deg - earth_longitude_deg
+    longitude_offset_rad = math.radians(longitude_offset_deg)
+    linear_coefficient = 2 * earth_distance_au * math.cos(longitude_offset_rad)
     constant_term = earth_distance_au ** 2 - planet_distance_au ** 2
     discriminant = linear_coefficient ** 2 - 4 * constant_term
+
+    warning = None
     if discriminant < 0:
-        return []
+        max_elongation_deg = math.degrees(
+            math.asin(min(1.0, planet_distance_au / earth_distance_au))
+        )
+        implied_elongation_deg = abs(longitude_offset_deg % 360 - 180)
+        warning = (
+            f"reading implies the planet is {implied_elongation_deg - max_elongation_deg:.1f} deg "
+            f"beyond its {max_elongation_deg:.1f} deg maximum possible elongation -- "
+            "treating it as the nearest point on the known orbit; check this row "
+            "for a transcription error"
+        )
+        discriminant = 0.0
+
     sqrt_discriminant = math.sqrt(discriminant)
     roots = [
         (-linear_coefficient + sqrt_discriminant) / 2,
         (-linear_coefficient - sqrt_discriminant) / 2,
     ]
-    return [distance for distance in roots if distance > 0]
+    candidates = [distance for distance in roots if distance > 0]
+    return candidates, warning
 
 
 def heliocentric_longitude_deg(geocentric_longitude_deg, earth_x, earth_y, distance_au):
@@ -160,37 +199,96 @@ def closest_to(candidates, target_deg):
     return min(candidates, key=lambda candidate: angular_distance(candidate, target_deg))
 
 
-def convert_series(geocentric_longitudes_deg, earth_longitudes_deg,
-                    earth_distances_au, planet_distances_au):
+def predicted_longitude_deg(previous_deg, approx_rate_deg_per_day, elapsed_days):
+    """Where the planet should be roughly, given its last position and its known rate."""
+    return (previous_deg + approx_rate_deg_per_day * elapsed_days) % 360
+
+
+def candidate_longitudes_for_epoch(geocentric_longitude_deg, earth_longitude_deg,
+                                    earth_distance_au, planet_distance_au):
+    """The heliocentric longitude candidate(s) for a single epoch, plus any warning."""
+    earth_x, earth_y = earth_heliocentric_xy(earth_longitude_deg, earth_distance_au)
+    distances, warning = earth_planet_distance_candidates(
+        geocentric_longitude_deg, earth_longitude_deg, earth_distance_au, planet_distance_au
+    )
+    longitudes = [
+        heliocentric_longitude_deg(geocentric_longitude_deg, earth_x, earth_y, distance)
+        for distance in distances
+    ]
+    return longitudes, warning
+
+
+def build_path(geocentric_longitudes_deg, earth_longitudes_deg, earth_distances_au,
+               planet_distances_au, days_since_start, approx_rate_deg_per_day,
+               first_choice_index):
+    """
+    Walk the whole series once, choosing a candidate at every epoch after
+    the first by picking whichever is closest to where the planet should
+    roughly be, given its previous position and its known rate of motion.
+
+    At the first epoch there is nothing to compare to, so first_choice_index
+    picks which candidate to start from when there are two (0 or 1; ignored
+    when there is only one). Returns (chosen_longitudes, total_surprise,
+    warnings), where total_surprise is the sum, over every epoch after the
+    first, of how far the chosen candidate was from the prediction -- a
+    measure of how well this starting choice held together.
+    """
+    chosen_longitudes = []
+    warnings = []
+    total_surprise = 0.0
+    previous_longitude = None
+    previous_day = None
+
+    for day, lon_geo, lon_earth, r_earth, r_planet in zip(
+        days_since_start, geocentric_longitudes_deg, earth_longitudes_deg,
+        earth_distances_au, planet_distances_au
+    ):
+        candidates, warning = candidate_longitudes_for_epoch(lon_geo, lon_earth, r_earth, r_planet)
+        if warning is not None:
+            warnings.append(f"day {day}: {warning}")
+
+        if previous_longitude is None:
+            chosen = candidates[first_choice_index] if len(candidates) > 1 else candidates[0]
+        elif len(candidates) == 1:
+            chosen = candidates[0]
+        else:
+            prediction = predicted_longitude_deg(
+                previous_longitude, approx_rate_deg_per_day, day - previous_day
+            )
+            chosen = closest_to(candidates, prediction)
+            difference = abs(chosen - prediction)
+            total_surprise += min(difference, 360 - difference)
+
+        chosen_longitudes.append(chosen)
+        previous_longitude, previous_day = chosen, day
+
+    return chosen_longitudes, total_surprise, warnings
+
+
+def convert_series(geocentric_longitudes_deg, earth_longitudes_deg, earth_distances_au,
+                    planet_distances_au, days_since_start, approx_rate_deg_per_day):
     """
     Convert a whole series of geocentric readings to heliocentric longitude.
 
     For a planet closer to the Sun than Earth (e.g. Venus), a single epoch
-    can have two valid solutions. We keep whichever is closest to the
-    previous epoch's chosen value, since the true motion is smooth from one
-    60-day step to the next.
+    can have two valid candidates, and the first epoch has no earlier value
+    to compare to -- so this tries starting from each candidate at the first
+    epoch, and keeps whichever choice stays closest to its own predictions
+    across the whole series. (When every epoch has only one candidate, both
+    attempts are identical, so this is safe to run either way.)
     """
-    results = []
-    previous = None
-    for lon_geo, lon_earth, r_earth, r_planet in zip(
-        geocentric_longitudes_deg, earth_longitudes_deg,
-        earth_distances_au, planet_distances_au
-    ):
-        earth_x, earth_y = earth_heliocentric_xy(lon_earth, r_earth)
-        distances = earth_planet_distance_candidates(lon_geo, lon_earth, r_earth, r_planet)
-        candidates = [
-            heliocentric_longitude_deg(lon_geo, earth_x, earth_y, distance)
-            for distance in distances
-        ]
-
-        if len(candidates) == 1 or previous is None:
-            chosen = candidates[0]
-        else:
-            chosen = closest_to(candidates, previous)
-
-        results.append(chosen)
-        previous = chosen
-    return results
+    first_attempt = build_path(
+        geocentric_longitudes_deg, earth_longitudes_deg, earth_distances_au,
+        planet_distances_au, days_since_start, approx_rate_deg_per_day, first_choice_index=0,
+    )
+    second_attempt = build_path(
+        geocentric_longitudes_deg, earth_longitudes_deg, earth_distances_au,
+        planet_distances_au, days_since_start, approx_rate_deg_per_day, first_choice_index=1,
+    )
+    chosen_longitudes, total_surprise, warnings = min(
+        first_attempt, second_attempt, key=lambda attempt: attempt[1]
+    )
+    return chosen_longitudes, warnings
 
 
 def main():
@@ -198,26 +296,31 @@ def main():
     # order as DAYS_SINCE_START above. The numbers below are made up, just
     # to show the script running end to end -- they are not real Dome data.
     example_venus_geocentric_deg = [
-        173.8, 182.3, 297.6, 298.7, 43.5, 46.4,
-        163.7, 182.1, 267.3, 288.4, 33.3, 66.4,
+        106.8, 181.4, 259.0, 337.3, 53.8, 124.9,
+        171.1, 154.1, 214.0, 289.4, 6.5, 82.9,
     ]
     example_mars_geocentric_deg = [
-        40.0, 95.0, 150.0, 200.0, 250.0, 300.0,
-        350.0, 40.0, 90.0, 140.0, 190.0, 240.0,
+        52.4, 65.8, 52.3, 64.3, 95.0, 131.3,
+        170.1, 210.8, 253.0, 295.9, 337.7, 16.7,
     ]
 
-    venus_helio_deg = convert_series(
+    venus_helio_deg, venus_warnings = convert_series(
         example_venus_geocentric_deg, EARTH_LONGITUDE_DEG,
-        EARTH_DISTANCE_AU, VENUS_DISTANCE_AU,
+        EARTH_DISTANCE_AU, VENUS_DISTANCE_AU, DAYS_SINCE_START,
+        VENUS_APPROX_RATE_DEG_PER_DAY,
     )
-    mars_helio_deg = convert_series(
+    mars_helio_deg, mars_warnings = convert_series(
         example_mars_geocentric_deg, EARTH_LONGITUDE_DEG,
-        EARTH_DISTANCE_AU, MARS_DISTANCE_AU,
+        EARTH_DISTANCE_AU, MARS_DISTANCE_AU, DAYS_SINCE_START,
+        MARS_APPROX_RATE_DEG_PER_DAY,
     )
 
     print(f"{'day':>5}  {'venus (helio)':>14}  {'mars (helio)':>13}")
     for day, venus_lon, mars_lon in zip(DAYS_SINCE_START, venus_helio_deg, mars_helio_deg):
         print(f"{day:5d}  {venus_lon:14.2f}  {mars_lon:13.2f}")
+
+    for warning in venus_warnings + mars_warnings:
+        print(f"venus/mars warning -- {warning}")
 
 
 if __name__ == "__main__":
@@ -229,24 +332,31 @@ your data) prints:
 
 ```
   day   venus (helio)   mars (helio)
-    0          217.96         359.04
-   60          154.28          57.84
-  120           65.90         116.25
-  180          153.93         170.41
-  240          195.34         223.96
-  300          280.08         276.96
-  360          307.13         330.17
-  420           22.96          24.70
-  480           73.70          81.15
-  540          151.45         138.82
-  600          192.17         195.90
-  660          260.43         251.27
+    0           50.01           9.97
+   60          152.06          39.98
+  120          254.01          70.00
+  180          356.09          99.97
+  240           97.88         130.00
+  300          199.93         159.98
+  360          302.03         189.98
+  420           44.05         220.05
+  480          145.91         250.00
+  540          247.96         280.08
+  600          349.97         310.05
+  660           92.02         339.99
 ```
 
-Notice `earth_planet_distance_candidates` returns **two** candidates at every
-one of these example epochs for Venus, yet the printed longitudes still move
-smoothly — that's `closest_to` doing the continuity resolution described
-above, epoch by epoch, not a coincidence of these particular made-up numbers.
+Notice `candidate_longitudes_for_epoch` returns **two** candidates at every
+one of these example epochs for Venus, yet the printed longitudes still climb
+steadily. That's `convert_series` doing two things: trying both candidates as
+the starting point at day 0 (since there's nothing earlier to compare
+against), and picking whichever candidate at each later epoch is closest to
+where Venus should roughly be, given its previous position and its known
+~1.6°/day rate — not closest to the raw previous value, which is not the same
+thing once a single step covers most of Venus's ~46° maximum elongation swing.
+It also won't crash if a reading turns out to be very slightly beyond what's
+geometrically possible (a small mismatch is common with a hand-read angle);
+it prints a warning and uses the nearest point on the known orbit instead.
 
 To use it on your own data: replace `example_venus_geocentric_deg` and
 `example_mars_geocentric_deg` in `main()` with your own twelve readings, in
@@ -308,15 +418,16 @@ so it needs your raw numbers, not your own converted ones.
 
 ## One more fix, unrelated to the above: your Part 2 instructions
 
-Separately from the geocentric/heliocentric mix-up, the eccentricity grid
-search in your capstone README (Part 2, Step 2, Model B) used `e` and `pi` as
-loop variable names. `pi` in particular is a bad name for anything other than
-the constant 3.14159… — it's been renamed to `eccentricity` and
-`pericenter_longitude_deg` in the template.
-
-**This fix won't have reached your own capstone repository** — it was
-generated from the template before this fix was made, back when you collected
-your data in August, and a template fix afterwards doesn't propagate to
-repositories already created. If you copy that snippet into `alignment.py` on
-26 October, rename the two loop variables yourself rather than typing `e` and
-`pi` as they currently appear in your repo's README.
+Separately from the geocentric/heliocentric mix-up, two code snippets in your
+capstone README used single-letter or confusable variable names: the
+eccentricity grid search (Part 2, Step 2, Model B) used `e` and `pi` as loop
+variable names — `pi` in particular is a bad name for anything other than the
+constant 3.14159… — and the Cartesian-conversion snippet (Step 4) used
+`x`/`y`/`r`. Both have been renamed (to `eccentricity`/
+`pericenter_longitude_deg`, and `planet_x`/`planet_y`/`radius_au`, in the
+template repository your own was generated from) and pushed directly to your
+own capstone repository's README, since that repository was generated on 14
+September — before this fix was made, and a template fix afterwards doesn't
+reach a repository already generated from it. No behaviour changed, only
+names. `convert_dome_data.py` has also been added to your repository directly,
+so you don't need to copy it from this announcement.
