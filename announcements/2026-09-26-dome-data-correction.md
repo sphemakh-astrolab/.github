@@ -305,3 +305,18 @@ raw readings pooled together, to compare against it.
 heliocentric values. One issue per person, even if you worked in a pair. The
 conversion above will be applied once, the same way, to the whole pooled set,
 so it needs your raw numbers, not your own converted ones.
+
+## One more fix, unrelated to the above: your Part 2 instructions
+
+Separately from the geocentric/heliocentric mix-up, the eccentricity grid
+search in your capstone README (Part 2, Step 2, Model B) used `e` and `pi` as
+loop variable names. `pi` in particular is a bad name for anything other than
+the constant 3.14159… — it's been renamed to `eccentricity` and
+`pericenter_longitude_deg` in the template.
+
+**This fix won't have reached your own capstone repository** — it was
+generated from the template before this fix was made, back when you collected
+your data in August, and a template fix afterwards doesn't propagate to
+repositories already created. If you copy that snippet into `alignment.py` on
+26 October, rename the two loop variables yourself rather than typing `e` and
+`pi` as they currently appear in your repo's README.
